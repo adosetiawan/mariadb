@@ -1,0 +1,62 @@
+version: '3.8'
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb_container
+    environment:
+      MYSQL_ROOT_PASSWORD: rootroot
+      MYSQL_USER: phpmyadmin
+      MYSQL_PASSWORD: phpmyadmin@123
+    ports:
+      - "3306:3306"  # Expose MariaDB on port 3306
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - backend_network
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin_container
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: phpmyadmin
+      PMA_PASSWORD: phpmyadmin@123
+      UPLOAD_LIMIT: 512M   # Set the upload limit to 512MB
+      # Additional PHP configurations
+      PHP_UPLOAD_MAX_FILESIZE: 512M
+      PHP_POST_MAX_SIZE: 512M
+    ports:
+      - "8080:80"
+    depends_on:
+      - mariadb
+    networks:
+      - backend_network
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"  # Expose Redis on port 637
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend_network
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: rabbitmq_container
+    ports:
+      - "5672:5672"      # Port untuk aplikasi
+      - "15672:15672"    # Port untuk antarmuka manajemen RabbitMQ
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit@123
+      RABBITMQ_DEFAULT_VHOST: my_vhost
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - backend_network
+volumes:
+  mariadb_data:
+  redis_data:
+  rabbitmq_data:
+networks:
+  backend_network:
